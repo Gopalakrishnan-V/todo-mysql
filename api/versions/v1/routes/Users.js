@@ -18,21 +18,24 @@ router.post("/", async (req, res) => {
     let { id, password, name } = req.body;
     const matchingRows = await query("SELECT id FROM user WHERE id=?", id);
     if (matchingRows.length) {
-      res.status(400).send("User already registered.");
+      return res
+        .status(400)
+        .send({ error: { code: 400, message: "User already registered" } });
     }
 
     const salt = await bcrypt.genSalt(10);
-    password = await bcrypt.hash(password, salt);
+    const encryptedPassword = await bcrypt.hash(password, salt);
+
     const addUserResult = await query(
       "INSERT INTO user(id,password,name) VALUES(?,?,?)",
-      [id, password, name]
+      [id, encryptedPassword, name]
     );
     if (!addUserResult.affectedRows) {
-      res.status(500).send(commonErrorObject);
+      return res.status(500).send(commonErrorObject);
     }
     const payload = { id };
     const token = tokenUtil.generateAuthToken(payload);
-    res.send({ data: { token } });
+    return res.send({ data: { token } });
   } catch (e) {
     res.status(500).send(commonErrorObject);
     console.log(e);

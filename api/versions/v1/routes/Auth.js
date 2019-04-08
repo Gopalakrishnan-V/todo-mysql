@@ -14,25 +14,29 @@ const commonErrorObject = {
 };
 
 router.post("/", async (req, res) => {
+  console.log("req.body", req.body);
+
   try {
     const { id, password } = req.body;
-    const results = query("SELECT password FROM user WHERE id=? LIMIT 1", id);
+    const results = await query("SELECT password FROM user WHERE id=?", id);
     if (!results.length) {
       return res
         .status(400)
-        .send({ error: { code: 400, message: "Invalid id or password" } });
+        .send({ error: { code: 400, message: "Invalid User Id or password" } });
     }
 
     const validPassword = await bcrypt.compare(password, results[0].password);
     if (!validPassword) {
       return res
         .status(400)
-        .send({ error: { code: 400, message: "Invalid id or password" } });
+        .send({ error: { code: 400, message: "Invalid Id or password" } });
     }
 
-    const token = tokenUtil.generateAuthToken();
-    res.send({ data: { token } });
+    const payload = { id };
+    const token = tokenUtil.generateAuthToken(payload);
+    return res.send({ data: { token } });
   } catch (e) {
+    console.log(e);
     res.status(500).send(commonErrorObject);
   }
 });

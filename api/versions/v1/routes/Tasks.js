@@ -16,7 +16,7 @@ router.get("/", auth, async (req, res) => {
   try {
     const { user } = req;
     const results = await query(
-      "SELECT * FROM task WHERE created_by=?",
+      "SELECT id,text FROM task WHERE created_by=?",
       user.id
     );
     res.send({ data: { tasks: results } });
@@ -31,7 +31,7 @@ router.get("/:id", auth, async (req, res) => {
     let { id } = req.params;
     id = parseInt(id);
     const results = await query(
-      "SELECT * FROM task WHERE id=? AND created_by=?",
+      "SELECT id FROM task WHERE id=? AND created_by=?",
       [id, user.id]
     );
     if (!results.length) {
@@ -57,7 +57,10 @@ router.post("/", auth, async (req, res) => {
       return res.status(500).send(commonErrorObject);
     }
     return res.send({
-      data: { task: { id: result.insertId, text, createdBy: user.id } }
+      data: {
+        message: "Task added Successfully",
+        task: { id: result.insertId, text }
+      }
     });
   } catch (e) {
     res.status(500).send(commonErrorObject);
@@ -77,7 +80,7 @@ router.put("/:id", auth, async (req, res) => {
       return res.send({
         data: {
           message: "Task updated Successfully",
-          task: { id, text, createdBy: user.id }
+          task: { id, text }
         }
       });
     } else {
