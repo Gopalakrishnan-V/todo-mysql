@@ -8,7 +8,7 @@ require("./startup/config")();
 
 app.use("/api", Api);
 
-const server = app.listen(6000, () => {
+const server = app.listen(process.env.port || 6000, () => {
   console.log("Server started running in port 6000");
 });
 
